@@ -6,10 +6,10 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 __version__ = "0.0.0"
 
-REPO_NAME = "Text-Summarizer-Project"
+REPO_NAME = "MyBandhubot"
 AUTHOR_USER_NAME = "SoumapriyoM"
 SRC_REPO = "MyBandhubot"
-AUTHOR_EMAIL = "entbappy73@gmail.com"
+AUTHOR_EMAIL = "soumapriyomondalabc@gmail.com"
 
 
 
