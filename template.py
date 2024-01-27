@@ -18,6 +18,7 @@ list_of_files = [
     "requirements.txt",
     "setup.py",
     "research/trials.ipynb",
+    "sentiment.py"
 
 ]
 

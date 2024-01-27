@@ -1,4 +1,4 @@
-# Use the official Python image as the base image
+# Use an official Python runtime as a parent image
 FROM python:3.8-slim
 
 # Set the working directory to /app
@@ -17,4 +17,4 @@ EXPOSE 80
 ENV NAME World
 
 # Run app.py when the container launches
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["python", "app.py"]

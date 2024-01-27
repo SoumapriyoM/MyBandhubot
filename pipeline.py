@@ -1,5 +1,5 @@
 # chatbot_pipeline.py
-
+import requests
 import os
 import json
 import random
@@ -38,20 +38,6 @@ class ChatbotPipeline:
         x_test = pad_sequences(x_test, padding='post', maxlen=self.model.input_shape[1])
         return x_test
 
-    def generate_answer(self, pattern):
-        x_test = self.preprocess_input(pattern)
-        y_pred = self.model.predict(x_test)
-        predicted_tag = self.lbl_enc.inverse_transform([y_pred.argmax()])[0]
-        responses = self.df[self.df['tag'] == predicted_tag]['responses'].values[0]
-
-        if not responses:
-            random_response = "I don't get it."
-        else:
-            random_response = random.choice(responses)
-
-        print("Bot:", random_response)
-        return random_response
-
     def save_pipeline(self, model_path, tokenizer_path, pipeline_path):
         # Exclude _thread.RLock object from pickling
         model_copy = self.model
@@ -71,6 +57,40 @@ class ChatbotPipeline:
         }
         with open(pipeline_path, 'wb') as pipeline_file:
             pickle.dump(pipeline, pipeline_file)
+
+    def generate_answer(self, pattern):
+        x_test = self.preprocess_input(pattern)
+        y_pred = self.model.predict(x_test)
+        predicted_tag = self.lbl_enc.inverse_transform([y_pred.argmax()])[0]
+        responses = self.df[self.df['tag'] == predicted_tag]['responses'].values[0]
+
+        if not responses:
+            random_response = "I don't get it."
+        else:
+            random_response = random.choice(responses)
+
+        print("Bot:", random_response)
+        return random_response
+
+    def get_text_emotion(self,pattern, api_key):
+        url = "https://twinword-emotion-analysis-v1.p.rapidapi.com/analyze/"
+        payload = { "text": pattern }
+        default_api_key = "f57f8e9a13mshc8dbe8587fc090cp1e6b8cjsndfb06d21fb13"
+        if api_key != None:
+            default_api_key=api_key
+        headers = {
+            "content-type": "application/x-www-form-urlencoded",
+            "X-RapidAPI-Key": default_api_key,
+            "X-RapidAPI-Host": "twinword-emotion-analysis-v1.p.rapidapi.com"
+        }
+        response = requests.post(url, data=payload, headers=headers)
+        emotions_detected = response.json()['emotions_detected'][0]
+        return emotions_detected
+
+    def get_emotion(self, pattern):
+        api_key=None
+        emotions_detected = self.get_text_emotion(pattern, api_key=api_key)
+        return emotions_detected
 
     @classmethod
     def load_pipeline(cls, model_path, tokenizer_path, pipeline_path):
