@@ -72,12 +72,10 @@ class ChatbotPipeline:
         print("Bot:", random_response)
         return random_response
 
-    def get_text_emotion(self,pattern, api_key):
+    def get_text_emotion(self,pattern, api_key2):
         url = "https://twinword-emotion-analysis-v1.p.rapidapi.com/analyze/"
         payload = { "text": pattern }
-        default_api_key = "f57f8e9a13mshc8dbe8587fc090cp1e6b8cjsndfb06d21fb13"
-        if api_key != None:
-            default_api_key=api_key
+        default_api_key = api_key2
         headers = {
             "content-type": "application/x-www-form-urlencoded",
             "X-RapidAPI-Key": default_api_key,
@@ -87,9 +85,8 @@ class ChatbotPipeline:
         emotions_detected = response.json()['emotions_detected'][0]
         return emotions_detected
 
-    def get_emotion(self, pattern):
-        api_key=None
-        emotions_detected = self.get_text_emotion(pattern, api_key=api_key)
+    def get_emotion(self, pattern,api_key2):
+        emotions_detected = self.get_text_emotion(pattern, api_key2=api_key2)
         return emotions_detected
 
     @classmethod

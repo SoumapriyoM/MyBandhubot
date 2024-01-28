@@ -3,7 +3,18 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from pipeline import ChatbotPipeline
-import time,requests
+import time
+import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+api_key1 = os.getenv('api_key1')
+api_key2 = os.getenv('api_key2')
+
+if api_key1 is None or api_key2 is None:
+    raise EnvironmentError("One or more required environment variables are missing.")
 
 app = FastAPI()
 
@@ -31,26 +42,22 @@ async def predict(pattern: PatternInput):
     try:
         # Generate an answer using the chatbot pipeline
         answer = pipeline.generate_answer(pattern.pattern)
-
         # Get emotion for the input text
-        emotion = pipeline.get_emotion(pattern.pattern)
-        if emotion is None:
-            emotion = 'Neutral'
+        emotion = pipeline.get_emotion(pattern.pattern, api_key2)
 
         return {"answer": answer, "emotion": emotion}
     except Exception as e:
-        emotion="Neutral"
-        return {"answer": answer, "emotion": emotion}
+        emotion = "Neutral"
+        return {"answer": "Error generating answer", "emotion": emotion, "error_message": str(e)}
 
 @app.get("/recommendations")
 async def get_music_recommendations(emotion: str):
     try:
         # Replace 'YOUR_LASTFM_API_KEY' with your Last.fm API key
-        api_key = '199d58cff4f769e90d1b3d31137aa4f1'
         limit = 5  # You can adjust the limit as needed
 
         # Make a request to Last.fm API to get top tracks based on the provided emotion
-        lastfm_url = f'http://ws.audioscrobbler.com/2.0/?method=tag.gettoptracks&tag={emotion}&api_key={api_key}&format=json&limit={limit}'
+        lastfm_url = f'http://ws.audioscrobbler.com/2.0/?method=tag.gettoptracks&tag={emotion}&api_key={api_key1}&format=json&limit={limit}'
         response = requests.get(lastfm_url)
         response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -59,7 +66,7 @@ async def get_music_recommendations(emotion: str):
         tracks = data.get('tracks', {}).get('track', [])
 
         # Extract relevant information for each track
-        recommendation= []
+        recommendation = []
         for track in tracks:
             track_name = track.get('name', '')
             artist_name = track.get('artist', {}).get('name', '')
