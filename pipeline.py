@@ -4,6 +4,7 @@ import os
 import json
 import random
 import nltk
+nltk.download('punkt')
 import pickle
 import pandas as pd
 import numpy as np
