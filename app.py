@@ -39,16 +39,16 @@ class PatternInput(BaseModel):
 
 @app.post("/predict")
 async def predict(pattern: PatternInput):
+    answer = pipeline.generate_answer(pattern.pattern)
     try:
         # Generate an answer using the chatbot pipeline
-        answer = pipeline.generate_answer(pattern.pattern)
         # Get emotion for the input text
         emotion = pipeline.get_emotion(pattern.pattern, api_key2)
 
         return {"answer": answer, "emotion": emotion}
     except Exception as e:
         emotion = "Neutral"
-        return {"answer": "Error generating answer", "emotion": emotion, "error_message": str(e)}
+        return {"answer": answer, "emotion": emotion}
 
 @app.get("/recommendations")
 async def get_music_recommendations(emotion: str):

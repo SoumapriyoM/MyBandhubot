@@ -8,6 +8,7 @@ import pickle
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+from tensorflow import keras
 from tensorflow.keras.layers import Bidirectional, LSTM, LayerNormalization, Dense, Embedding, Input, Dropout
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.preprocessing.text import Tokenizer
