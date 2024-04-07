@@ -17,6 +17,13 @@ if api_key1 is None or api_key2 is None:
     raise EnvironmentError("One or more required environment variables are missing.")
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins, you can also specify specific origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 # Mount the "static" directory to serve static files (CSS and JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
