@@ -2,9 +2,11 @@
 import requests
 import os
 import json
+import joblib
 import random
 import nltk
 nltk.download('punkt')
+import neattext.functions as nfx
 import pickle
 import pandas as pd
 import numpy as np
@@ -17,10 +19,11 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing import LabelEncoder
 
 class ChatbotPipeline:
-    def __init__(self, model, tokenizer, lbl_enc, df):
+    def __init__(self, model, tokenizer, lbl_enc,pipe_lr, df):
         self.model = model
         self.tokenizer = tokenizer
         self.lbl_enc = lbl_enc
+        self.pipe_lr=pipe_lr
         self.df = df
 
     def clean_sentence(self, verification_data):
@@ -87,12 +90,21 @@ class ChatbotPipeline:
         emotions_detected = response.json()['emotions_detected'][0]
         return emotions_detected
 
+    def predict_emotions(self,pattern):
+        pattern_text = nfx.remove_stopwords(pattern)
+        results = self.pipe_lr.predict([pattern])
+        return results[0]
+
+    def get_prediction_proba(self,pattern):
+        results = self.pipe_lr.predict_proba([pattern])
+        return results
+
     def get_emotion(self, pattern,api_key2):
         emotions_detected = self.get_text_emotion(pattern, api_key2=api_key2)
         return emotions_detected
 
     @classmethod
-    def load_pipeline(cls, model_path, tokenizer_path, pipeline_path):
+    def load_pipeline(cls, model_path, tokenizer_path, pipe_lr,pipeline_path):
         loaded_model = tf.keras.models.load_model(model_path)
 
         with open(tokenizer_path, 'rb') as tokenizer_file:
@@ -100,10 +112,13 @@ class ChatbotPipeline:
 
         with open(pipeline_path, 'rb') as pipeline_file:
             pipeline = pickle.load(pipeline_file)
+        
+        pipe_lr = joblib.load(open(pipe_lr, "rb"))
 
         return cls(
             model=loaded_model,
             tokenizer=loaded_tokenizer,
             lbl_enc=pipeline['lbl_enc'],
+            pipe_lr=pipe_lr,
             df=pipeline['df']
         )
