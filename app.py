@@ -26,16 +26,17 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-# Mount the "static" directory to serve static files (CSS and JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Load the pre-trained chatbot pipeline
 pipeline = ChatbotPipeline.load_pipeline(
     model_path='model_jar/model.h5',
     tokenizer_path='model_jar/tokenizer.pkl',
-    pipeline_path='model_jar/pipeline.pkl'
+    pipeline_path='model_jar/pipeline.pkl',
+    pipe_lr = 'model_jar/emotion_classifier_pipe_lr.pkl'
 )
-
+# with open('model_jar/emotion_classifier_pipe_lr.pkl', "rb") as f:
+#         pipe_lr = pickle.load(f)
 # Define the HTML endpoint
 @app.get("/", response_class=HTMLResponse)
 async def get_index():
@@ -51,12 +52,20 @@ async def predict(pattern: PatternInput):
     try:
         # Generate an answer using the chatbot pipeline
         # Get emotion for the input text
-        emotion = pipeline.get_emotion(pattern.pattern, api_key2)
-
+        # emotion = pipeline.get_emotion(pattern.pattern, api_key2)
+        emotion = pipeline.predict_emotions(pattern.pattern)
         return {"answer": answer, "emotion": emotion}
     except Exception as e:
         emotion = "Neutral"
         return {"answer": answer, "emotion": emotion}
+
+@app.post("/predict_emot")  
+def predict_emotions(pattern: PatternInput):
+    pattern_text = nfx.remove_stopwords(pattern.pattern)  # Extract pattern text
+    # Ensure the input data is formatted correctly for prediction
+    input_data = [pattern_text]  # Convert to a list
+    results = pipeline.predict_emotions(input_data)
+    return {"emotion": results}
 
 @app.get("/recommendations")
 async def get_music_recommendations(emotion: str):
